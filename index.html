@@ -89,7 +89,7 @@ body::before{display:none;}
 50%{transform:translate(-40px,40px) scale(1.2);}}
 
 /* ══ LOGIN ══ */
-#login-screen{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg);}
+#login-screen{position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg);box-sizing:border-box;}
 .lcard{background:var(--surface);border:1px solid var(--border);border-radius:24px;width:100%;max-width:420px;padding:40px 36px;box-shadow:0 40px 100px rgba(0,0,0,0.6),0 0 0 1px rgba(0,180,255,0.08);animation:lIn .6s cubic-bezier(.34,1.56,.64,1) both;position:relative;overflow:hidden;}
 .lcard::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(0,102,255,.12),transparent);pointer-events:none;}
 .lcard::after{content:'';position:absolute;bottom:-40px;left:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,.08),transparent);pointer-events:none;}
@@ -997,6 +997,32 @@ tbody td{padding:10px 14px;vertical-align:middle;}
 
 </div><!-- /#app -->
 
+<!-- MODAL: CONTACT CUSTOMER -->
+<div class="mo" id="m-contact"><div class="modal" style="max-width:500px">
+  <div class="mt"><h3>📲 تواصل مع العميل</h3><button class="mc" onclick="closeM('m-contact')">✕</button></div>
+  <div class="mb">
+    <!-- Customer info -->
+    <div id="contact-info" style="background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:14px;margin-bottom:16px;"></div>
+    <!-- Message preview -->
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">📝 نص الرسالة</label>
+      <textarea id="contact-msg" rows="8" style="width:100%;font-family:'Tajawal',sans-serif;font-size:13px;padding:11px 13px;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);direction:rtl;resize:vertical;line-height:1.7;"></textarea>
+    </div>
+    <!-- Action buttons -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <button onclick="sendWhatsApp()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border-radius:11px;border:none;font-family:'Tajawal',sans-serif;font-size:13.5px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#1DA851,#25D366);color:white;box-shadow:0 4px 14px rgba(37,211,102,.35);">
+        <span style="font-size:20px;">💬</span> واتساب
+      </button>
+      <button onclick="sendEmail()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border-radius:11px;border:none;font-family:'Tajawal',sans-serif;font-size:13.5px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#0066ff,#00d4ff);color:white;box-shadow:0 4px 14px rgba(0,180,255,.35);">
+        <span style="font-size:20px;">📧</span> إيميل
+      </button>
+      <button onclick="copyContactMsg()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;border-radius:11px;border:1px solid var(--border);font-family:'Tajawal',sans-serif;font-size:13px;font-weight:700;cursor:pointer;background:var(--surface2);color:var(--text);grid-column:1/-1;">
+        <span>📋</span> نسخ النص فقط
+      </button>
+    </div>
+  </div>
+</div></div>
+
 <!-- MODAL: EMPLOYEE PROFILE -->
 <div class="mo" id="m-emp-prof"><div class="modal" style="max-width:600px;padding:0;overflow:hidden">
   <div class="emp-prof-head">
@@ -1069,7 +1095,7 @@ tbody td{padding:10px 14px;vertical-align:middle;}
       <div class="fl"><label>القناة</label><select id="cc-ch"><option>هاتف</option><option>واتساب</option><option>وجهاً لوجه</option><option>بريد إلكتروني</option><option>تطبيق</option></select></div>
       <div class="fl"><label>الإجراء الأولي</label><input type="text" id="cc-fi" placeholder="ما تم فعله فوراً..."></div>
       <div class="fl"><label>📅 موعد المتابعة</label><input type="date" id="cc-fu"></div>
-      <div class="fl fgf"><label>🔒 ملاحظة داخلية <span style="font-size:9.5px;color:var(--purple)">(لا يراها العميل)</span></label><textarea id="cc-int" rows="2" placeholder="ملاحظة للفريق فقط..."></textarea></div>
+      <div class="fl fgf" id="cc-int-wrap"><label>🔒 ملاحظة داخلية <span style="font-size:9.5px;color:var(--purple)">(للإدارة فقط — لا يراها الموظف)</span></label><textarea id="cc-int" rows="2" placeholder="ملاحظة للإدارة فقط..."></textarea></div>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:9px;margin-top:17px"><button class="btn btn-ghost" onclick="closeM('m-ac')">إلغاء</button><button class="btn btn-primary" onclick="addComplaint()">💾 تسجيل</button></div>
   </div>
@@ -1283,7 +1309,10 @@ function fillAs(){const s=document.getElementById('cc-as');if(!s)return;s.innerH
 
 function openAddComp(){
   if(!has('add_complaints')){toast('ليس لديك صلاحية','danger');return;}
-  fillAs();['cc-n','cc-ph','cc-t','cc-d','cc-fi'].forEach(id=>{document.getElementById(id).value='';});
+  fillAs();['cc-n','cc-ph','cc-t','cc-d','cc-fi','cc-int'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  // الملاحظة الداخلية للإدارة فقط
+  const intWrap=document.getElementById('cc-int-wrap');
+  if(intWrap) intWrap.style.display=(CU.role==='admin'||CU.role==='manager')?'':'none';
   openM('m-ac');
 }
 
@@ -1325,7 +1354,7 @@ function renderComps(){
     const cs=cr.toLocaleString('ar-SA',{dateStyle:'short',timeStyle:'short'});
     const since=timeSince(cr);
     const an=c.assigned?gn(c.assigned):'—';
-    const aH=c.actions.map(a=>`<div class="ti ${a.type}"><div class="tt">${new Date(a.time).toLocaleString('ar-SA',{dateStyle:'short',timeStyle:'short'})}</div><div class="tx"><span>${a.text}</span><span class="tby">— ${a.by}</span></div></div>`).join('');
+    const aH=c.actions.map(a=>`<div class="ti ${a.type}"><div class="tt">${new Date(a.time).toLocaleString('ar-SA',{dateStyle:'short',timeStyle:'short'})}</div><div class="tx"><span>${highlightMentions(a.text)}</span><span class="tby">— ${a.by}</span></div></div>`).join('');
     const sO=['open','in-progress','resolved','escalated'].map(s=>`<option value="${s}" ${c.status===s?'selected':''}>${SM[s].l}</option>`).join('');
     return `<div class="cc s${c.status==='in-progress'?'p':c.status==='resolved'?'r':c.status==='escalated'?'e':'o'}" id="ccard-${c.id}">
       <div class="cch" onclick="togC('${c.id}')">
@@ -1345,11 +1374,12 @@ function renderComps(){
       <div class="cbody" id="cb-${c.id}">
         <div class="cbi">
           <div class="cdesc">${c.desc}</div>
-          ${c.internalNote?`<div class="int-note"><div class="int-note-label">🔒 ملاحظة داخلية</div><div style="font-size:12px;color:var(--text)">${c.internalNote}</div></div>`:''}
+          ${c.internalNote && (CU.role==='admin'||CU.role==='manager')?`<div class="int-note"><div class="int-note-label">🔒 ملاحظة داخلية — للإدارة فقط</div><div style="font-size:12px;color:var(--text)">${c.internalNote}</div></div>`:''}
           ${c.followUp?`<div style="margin-bottom:8px"><span class="fu-date-badge ${c.followUp<new Date().toISOString().slice(0,10)?'overdue':c.followUp===new Date().toISOString().slice(0,10)?'today':''}">📅 موعد المتابعة: ${c.followUp}</span></div>`:''}
           <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:11px">
             <strong style="font-size:11px;color:var(--glow);letter-spacing:.5px;text-transform:uppercase">📜 سجل الإجراءات</strong>
             <div style="flex:1"></div>
+            ${c.phone?`<button class="btn btn-sm" onclick="openContact('${c.id}')" style="background:linear-gradient(135deg,#00875a,#00e5a0);color:white;font-size:11.5px;">📲 تواصل مع العميل</button>`:''}
             ${canE?`<select class="btn btn-ghost btn-sm" style="cursor:pointer;font-size:11.5px;padding:5px 9px" onchange="updStatus('${c.id}',this.value)">${sO}</select>`:''}
             ${canE&&c.status!=='resolved'?`<button class="btn btn-success btn-sm" onclick="resolveC('${c.id}')">✅ حل</button>`:''}
             ${canD?`<button class="btn btn-danger btn-sm" onclick="delC('${c.id}')">🗑️</button>`:''}
@@ -1358,8 +1388,11 @@ function renderComps(){
           ${canE?`
           <div class="af">
             <div class="aft">➕ إضافة إجراء — سيُسجَّل باسمك: <span style="color:var(--gold2)">${CU.name}</span></div>
-            <div class="afr">
-              <input type="text" id="at-${c.id}" placeholder="وصف الإجراء المتخذ...">
+            <div class="afr" style="position:relative">
+              <div style="position:relative;flex:1;">
+                <input type="text" id="at-${c.id}" placeholder="وصف الإجراء... اكتب @ لتنبيه شخص أو قسم" oninput="handleMention(this,'${c.id}')" onkeydown="mentionKey(event,'${c.id}')">
+                <div id="mention-drop-${c.id}" style="display:none;position:absolute;top:calc(100% + 4px);right:0;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:999;max-height:180px;overflow-y:auto;"></div>
+              </div>
               <button class="btn btn-primary btn-sm" onclick="addAction('${c.id}')">إضافة</button>
             </div>
           </div>`:`<div style="font-size:11.5px;color:var(--text3);text-align:center;padding:9px;background:var(--bg2);border-radius:8px;margin-top:11px">⛔ ليس لديك صلاحية التعديل</div>`}
@@ -2401,6 +2434,161 @@ function respTimeBadge(mins){
 
 // Init notifications on load
 renderNotifDot();
+
+// ══════════════════════════════════════════
+// ── CONTACT CUSTOMER ──
+// ══════════════════════════════════════════
+let _contactComp = null;
+
+function openContact(cid){
+  const c = complaints.find(x=>x.id===cid);
+  if(!c||!c.phone) return;
+  _contactComp = c;
+
+  const stLbl={open:'مفتوحة','in-progress':'قيد المعالجة',resolved:'محلولة',escalated:'مُصعَّدة'};
+  const lastAct = c.actions.filter(a=>a.type==='action').slice(-1)[0];
+
+  // Customer info card
+  document.getElementById('contact-info').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--glow2),var(--glow));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">👤</div>
+      <div>
+        <div style="font-size:14px;font-weight:900;">${c.customer}</div>
+        <div style="font-size:12px;color:var(--text3);">📞 ${c.phone} &nbsp;·&nbsp; 🆔 ${c.id}</div>
+      </div>
+      <div style="margin-right:auto;text-align:left;">
+        <div style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;background:var(--bg3);color:var(--text2);">${stLbl[c.status]||'مفتوحة'}</div>
+      </div>
+    </div>`;
+
+  // Build message
+  const date = new Date(c.created).toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'});
+  const lastActText = lastAct ? `\n\n📌 آخر إجراء:\n${lastAct.text}` : '';
+  const resolvedNote = c.status==='resolved' ? '\n\n✅ نود إعلامكم بأنه تم حل الشكوى بنجاح.' : '';
+
+  const msg =
+`السلام عليكم ورحمة الله وبركاته
+عزيزنا/عزيزتنا ${c.customer}،
+
+نتواصل معكم من صيدلية المتحدة بخصوص شكواكم رقم ${c.id}.
+
+📋 تفاصيل الشكوى:
+• الموضوع: ${c.title}
+• التاريخ: ${date}
+• القسم المعني: ${c.dept}
+• الحالة الحالية: ${stLbl[c.status]||'مفتوحة'}${lastActText}${resolvedNote}
+
+نؤكد لكم أننا نولي شكواكم أهمية قصوى ونعمل على معالجتها في أقرب وقت ممكن.
+
+لأي استفسار، يُرجى التواصل معنا.
+
+مع تحيات فريق خدمة العملاء
+صيدلية المتحدة 💊`;
+
+  document.getElementById('contact-msg').value = msg;
+  openM('m-contact');
+}
+
+function sendWhatsApp(){
+  if(!_contactComp) return;
+  const msg = document.getElementById('contact-msg').value;
+  // Clean phone: remove spaces, dashes, +
+  let phone = _contactComp.phone.replace(/[\s\-\(\)]/g,'');
+  if(phone.startsWith('0')) phone = '966' + phone.slice(1);
+  if(!phone.startsWith('+') && !phone.startsWith('966')) phone = '966' + phone;
+  phone = phone.replace('+','');
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+}
+
+function sendEmail(){
+  if(!_contactComp) return;
+  const msg = document.getElementById('contact-msg').value;
+  const subject = encodeURIComponent(`شكوى رقم ${_contactComp.id} — صيدلية المتحدة`);
+  const body = encodeURIComponent(msg);
+  window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+}
+
+function copyContactMsg(){
+  const msg = document.getElementById('contact-msg').value;
+  navigator.clipboard.writeText(msg).then(()=>toast('✅ تم نسخ الرسالة','success'));
+}
+
+// ══════════════════════════════════════════
+// ── @ MENTIONS ──
+// ══════════════════════════════════════════
+const DEPTS = ['العمليات','التوصيل','إدارة الإدخال','المبيعات','التسويق'];
+
+function getMentionCandidates(){
+  const people = users.map(u=>({label:u.name, tag:'@'+u.username, type:'user', color:'#00d4ff'}));
+  const depts  = DEPTS.map(d=>({label:d, tag:'@'+d, type:'dept', color:'#f0a500'}));
+  return [...people, ...depts];
+}
+
+function highlightMentions(text){
+  // highlight @username or @قسم
+  return text.replace(/(@[\u0600-\u06FFa-zA-Z0-9_\u0020\u0621-\u064A]+)/g, m=>{
+    const clean = m.trim();
+    const isDept = DEPTS.some(d=>'@'+d===clean);
+    const color = isDept ? '#f0a500' : '#00d4ff';
+    return `<span style="color:${color};font-weight:800;background:${color}18;padding:1px 5px;border-radius:5px;">${clean}</span>`;
+  });
+}
+
+let _mentionCid = null;
+let _mentionIdx = -1;
+
+function handleMention(input, cid){
+  _mentionCid = cid;
+  const val = input.value;
+  const atIdx = val.lastIndexOf('@');
+  const drop = document.getElementById('mention-drop-'+cid);
+  if(atIdx === -1){ drop.style.display='none'; return; }
+
+  const query = val.slice(atIdx+1).toLowerCase();
+  const candidates = getMentionCandidates().filter(c=>
+    c.label.toLowerCase().includes(query) || c.tag.toLowerCase().includes(query)
+  );
+
+  if(!candidates.length){ drop.style.display='none'; return; }
+
+  _mentionIdx = -1;
+  drop.style.display = 'block';
+  drop.innerHTML = candidates.map((c,i)=>`
+    <div id="mitem-${cid}-${i}" onclick="pickMention('${cid}','${c.tag.replace(/'/g,"\\'")}',${atIdx})"
+      style="display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;transition:background .12s;border-bottom:1px solid var(--border2);"
+      onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+      <span style="width:22px;height:22px;border-radius:50%;background:${c.color}22;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">${c.type==='dept'?'🏢':'👤'}</span>
+      <span style="font-size:12.5px;font-weight:700;">${c.label}</span>
+      <span style="font-size:10px;color:${c.color};margin-right:auto;">${c.tag}</span>
+    </div>`).join('');
+}
+
+function pickMention(cid, tag, atIdx){
+  const input = document.getElementById('at-'+cid);
+  const before = input.value.slice(0, atIdx);
+  const after  = input.value.slice(input.value.length); // nothing after
+  input.value  = before + tag + ' ';
+  document.getElementById('mention-drop-'+cid).style.display = 'none';
+  input.focus();
+}
+
+function mentionKey(e, cid){
+  const drop = document.getElementById('mention-drop-'+cid);
+  if(drop.style.display==='none') return;
+  const items = drop.querySelectorAll('[id^="mitem-"]');
+  if(e.key==='ArrowDown'){ e.preventDefault(); _mentionIdx=Math.min(_mentionIdx+1,items.length-1); items.forEach((el,i)=>el.style.background=i===_mentionIdx?'var(--surface2)':''); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); _mentionIdx=Math.max(_mentionIdx-1,0); items.forEach((el,i)=>el.style.background=i===_mentionIdx?'var(--surface2)':''); }
+  else if(e.key==='Enter'&&_mentionIdx>=0){ e.preventDefault(); items[_mentionIdx]?.click(); }
+  else if(e.key==='Escape'){ drop.style.display='none'; }
+}
+
+// Close mention dropdown on outside click
+document.addEventListener('click', e=>{
+  document.querySelectorAll('[id^="mention-drop-"]').forEach(d=>{
+    if(!d.contains(e.target)) d.style.display='none';
+  });
+});
 </script>
 </body>
 </html>
