@@ -363,6 +363,8 @@ tbody td{padding:10px 14px;vertical-align:middle;}
 .toast.success{border-color:rgba(0,229,160,.4);} .toast.warning{border-color:rgba(255,176,32,.4);} .toast.danger{border-color:rgba(255,69,102,.4);}
 @keyframes tIn{from{opacity:0;transform:translateY(14px) scale(.95);}to{opacity:1;transform:translateY(0) scale(1);}}
 @keyframes tOut{from{opacity:1;}to{opacity:0;transform:translateY(-7px);}}
+@keyframes bellShake{0%{transform:rotate(0);}10%{transform:rotate(20deg);}25%{transform:rotate(-18deg);}40%{transform:rotate(14deg);}55%{transform:rotate(-10deg);}70%{transform:rotate(6deg);}85%{transform:rotate(-3deg);}100%{transform:rotate(0);}}
+.bell-ringing{animation:bellShake .75s cubic-bezier(.36,.07,.19,.97) both;transform-origin:top center;}
 .dvdr{height:1px;background:var(--border2);margin:13px 0;}
 @keyframes fu{from{opacity:0;transform:translateY(17px);}to{opacity:1;transform:translateY(0);}}
 ::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:3px;}
@@ -507,7 +509,7 @@ tbody td{padding:10px 14px;vertical-align:middle;}
 <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
 
 <!-- ████ LOGIN ████ -->
-<div id="login-screen">
+<div id="login-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg);box-sizing:border-box;">
   <div class="lcard">
     <div class="l-logo">
       <svg width="42" height="42" viewBox="0 0 42 42" fill="none" style="animation:pl 5s ease-in-out infinite">
@@ -549,7 +551,7 @@ tbody td{padding:10px 14px;vertical-align:middle;}
       <!-- NOTIFICATION BELL -->
       <div style="position:relative;flex-shrink:0">
         <button class="notif-bell" id="notif-bell" onclick="toggleNotifs(event)" title="الإشعارات">
-          🔔 <span class="notif-dot" id="notif-dot" style="display:none"></span>
+          🔔 <span id="notif-dot" style="display:none;position:absolute;top:-6px;right:-6px;background:var(--danger);color:white;border-radius:30px;font-size:10px;font-weight:900;min-width:18px;height:18px;padding:0 4px;display:none;align-items:center;justify-content:center;border:2px solid var(--bg);box-shadow:0 2px 6px rgba(255,69,102,.5);font-family:'Tajawal',sans-serif;"></span>
         </button>
         <div class="notif-drop" id="notif-drop">
           <div style="padding:12px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between">
@@ -1391,7 +1393,7 @@ function renderComps(){
             <div class="afr" style="position:relative">
               <div style="position:relative;flex:1;">
                 <input type="text" id="at-${c.id}" placeholder="وصف الإجراء... اكتب @ لتنبيه شخص أو قسم" oninput="handleMention(this,'${c.id}')" onkeydown="mentionKey(event,'${c.id}')">
-                <div id="mention-drop-${c.id}" style="display:none;position:absolute;top:calc(100% + 4px);right:0;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:999;max-height:180px;overflow-y:auto;"></div>
+                <div id="mention-drop-${c.id}" style="display:none;position:absolute;top:calc(100% + 4px);right:0;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:9999;max-height:220px;min-height:60px;overflow-y:auto;overflow-x:hidden;"></div>
               </div>
               <button class="btn btn-primary btn-sm" onclick="addAction('${c.id}')">إضافة</button>
             </div>
@@ -2016,11 +2018,39 @@ function addNotif(title, sub, type='info', compId=null){
   notifications.unshift({id:'N-'+Date.now(), title, sub, type, compId, time:new Date().toISOString(), read:false});
   if(notifications.length>50) notifications=notifications.slice(0,50);
   saveNotifs(); renderNotifDot(); renderNotifList();
+  ringBell();
+}
+function ringBell(){
+  // Shake animation
+  const bell = document.getElementById('notif-bell');
+  if(bell){ bell.classList.remove('bell-ringing'); void bell.offsetWidth; bell.classList.add('bell-ringing'); bell.addEventListener('animationend',()=>bell.classList.remove('bell-ringing'),{once:true}); }
+  // Bell sound via Web Audio API
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const playTone=(freq,start,dur,gain=0.4)=>{
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type='sine'; o.frequency.setValueAtTime(freq,ctx.currentTime+start);
+      g.gain.setValueAtTime(0,ctx.currentTime+start);
+      g.gain.linearRampToValueAtTime(gain,ctx.currentTime+start+0.01);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+start+dur);
+      o.start(ctx.currentTime+start); o.stop(ctx.currentTime+start+dur);
+    };
+    playTone(880,0,0.3,0.35);
+    playTone(1100,0.18,0.25,0.25);
+    playTone(880,0.38,0.4,0.2);
+  } catch(e){}
 }
 function renderNotifDot(){
   const unread = notifications.filter(n=>!n.read).length;
   const dot = document.getElementById('notif-dot');
-  if(dot) dot.style.display = unread>0?'block':'none';
+  if(!dot) return;
+  if(unread > 0){
+    dot.textContent = unread > 99 ? '99+' : unread;
+    dot.style.display = 'inline-flex';
+  } else {
+    dot.style.display = 'none';
+  }
 }
 function renderNotifList(){
   const el = document.getElementById('notif-list');
@@ -2470,7 +2500,7 @@ function openContact(cid){
 `السلام عليكم ورحمة الله وبركاته
 عزيزنا/عزيزتنا ${c.customer}،
 
-نتواصل معكم من صيدلية المتحدة بخصوص شكواكم رقم ${c.id}.
+نتواصل معكم بخصوص شكواكم رقم ${c.id}.
 
 📋 تفاصيل الشكوى:
 • الموضوع: ${c.title}
@@ -2482,8 +2512,7 @@ function openContact(cid){
 
 لأي استفسار، يُرجى التواصل معنا.
 
-مع تحيات فريق خدمة العملاء
-صيدلية المتحدة 💊`;
+مع تحيات فريق خدمة العملاء 💊`;
 
   document.getElementById('contact-msg').value = msg;
   openM('m-contact');
@@ -2546,22 +2575,45 @@ function handleMention(input, cid){
   if(atIdx === -1){ drop.style.display='none'; return; }
 
   const query = val.slice(atIdx+1).toLowerCase();
-  const candidates = getMentionCandidates().filter(c=>
+  const all = getMentionCandidates();
+  const candidates = query.length === 0 ? all : all.filter(c=>
     c.label.toLowerCase().includes(query) || c.tag.toLowerCase().includes(query)
   );
 
   if(!candidates.length){ drop.style.display='none'; return; }
 
   _mentionIdx = -1;
+
+  // Separate into users and depts
+  const ppl   = candidates.filter(x=>x.type==='user');
+  const depts = candidates.filter(x=>x.type==='dept');
+
+  let html = '';
+  if(ppl.length){
+    html += `<div style="font-size:9.5px;font-weight:800;color:var(--text3);padding:6px 12px 3px;letter-spacing:.5px;text-transform:uppercase;background:var(--bg2);">👤 موظفون</div>`;
+    html += ppl.map((c,i)=>`
+      <div id="mitem-${cid}-${i}" onclick="pickMention('${cid}','${c.tag.replace(/'/g,"\\'")}',${atIdx})"
+        style="display:flex;align-items:center;gap:9px;padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border2);box-sizing:border-box;"
+        onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <span style="width:26px;height:26px;border-radius:50%;background:${c.color}22;border:1px solid ${c.color}44;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">👤</span>
+        <span style="font-size:13px;font-weight:700;flex:1;">${c.label}</span>
+        <span style="font-size:10.5px;color:${c.color};font-weight:800;">${c.tag}</span>
+      </div>`).join('');
+  }
+  if(depts.length){
+    html += `<div style="font-size:9.5px;font-weight:800;color:var(--text3);padding:6px 12px 3px;letter-spacing:.5px;text-transform:uppercase;background:var(--bg2);">🏢 أقسام</div>`;
+    html += depts.map((c,i)=>`
+      <div id="mitem-${cid}-${ppl.length+i}" onclick="pickMention('${cid}','${c.tag.replace(/'/g,"\\'")}',${atIdx})"
+        style="display:flex;align-items:center;gap:9px;padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border2);box-sizing:border-box;"
+        onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <span style="width:26px;height:26px;border-radius:50%;background:${c.color}22;border:1px solid ${c.color}44;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">🏢</span>
+        <span style="font-size:13px;font-weight:700;flex:1;">${c.label}</span>
+        <span style="font-size:10.5px;color:${c.color};font-weight:800;">${c.tag}</span>
+      </div>`).join('');
+  }
+
+  drop.innerHTML = html;
   drop.style.display = 'block';
-  drop.innerHTML = candidates.map((c,i)=>`
-    <div id="mitem-${cid}-${i}" onclick="pickMention('${cid}','${c.tag.replace(/'/g,"\\'")}',${atIdx})"
-      style="display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;transition:background .12s;border-bottom:1px solid var(--border2);"
-      onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
-      <span style="width:22px;height:22px;border-radius:50%;background:${c.color}22;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">${c.type==='dept'?'🏢':'👤'}</span>
-      <span style="font-size:12.5px;font-weight:700;">${c.label}</span>
-      <span style="font-size:10px;color:${c.color};margin-right:auto;">${c.tag}</span>
-    </div>`).join('');
 }
 
 function pickMention(cid, tag, atIdx){
