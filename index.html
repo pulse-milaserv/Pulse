@@ -1373,44 +1373,55 @@ body.lang-ar .note-del { right:auto; left:8px; }
               <button class="btn btn-sm btn-excel" onclick="exportNotesExcel()" id="notesExportBtn">Export Notes</button>
             </div>
           </div>
-          <div class="notes-2col">
+          <!-- Unified colleague-grouped notes list -->
+          <div id="unifiedNotesList" style="margin-top:12px"></div>
 
-            <!-- POSITIVE -->
-            <div class="notes-col" style="border-top:3px solid var(--emerald)">
-              <div class="notes-col-head">
-                <span style="font-size:16px">✅</span>
-                <span class="notes-col-title" style="color:var(--emerald)" id="posTitleEl">Positive Points</span>
-                <span class="notes-col-badge" style="background:rgba(0,200,150,0.12);color:var(--emerald)" id="posCnt">0</span>
+          <!-- Add note box (admin only) -->
+          <div class="notes-add-unified admin-only" style="margin-top:16px;background:var(--ink2);border:1px solid var(--line2);border-radius:14px;padding:16px 18px">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:12px">➕ Add Note</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+              <div>
+                <div style="font-size:10px;color:var(--text3);margin-bottom:4px">Colleague</div>
+                <select id="posColSel" style="width:100%;background:var(--ink3);color:var(--text);border:1px solid var(--line2);border-radius:8px;padding:7px 10px;font-size:12px;font-family:inherit">
+                  <option value="">All Team</option>
+                </select>
+                <!-- keep negColSel in sync via JS -->
+                <select id="negColSel" style="display:none"><option value="">All Team</option></select>
               </div>
-              <div class="notes-list" id="posNotesList"></div>
-              <div class="notes-add-box admin-only">
-                <div class="notes-add-row">
-                  <select id="posColSel"><option value="">All Team</option></select>
-                  <input type="text" id="posDateInp" placeholder="Date (optional)" style="max-width:130px">
-                </div>
-                <textarea class="notes-textarea" id="posTextInp" placeholder="Enter a positive observation…" rows="2"></textarea>
-                <button class="notes-submit-btn pos-submit" onclick="addNote('positive')" id="posSubmitBtn">+ Add Positive Note</button>
+              <div>
+                <div style="font-size:10px;color:var(--text3);margin-bottom:4px">Type</div>
+                <select id="noteTypeSelect" style="width:100%;background:var(--ink3);color:var(--text);border:1px solid var(--line2);border-radius:8px;padding:7px 10px;font-size:12px;font-family:inherit">
+                  <option value="positive">✅ Positive</option>
+                  <option value="negative">⚠ Improvement</option>
+                </select>
+              </div>
+              <div>
+                <div style="font-size:10px;color:var(--text3);margin-bottom:4px">Date (optional)</div>
+                <input type="text" id="posDateInp" placeholder="e.g. 15 Mar" style="width:100%;background:var(--ink3);color:var(--text);border:1px solid var(--line2);border-radius:8px;padding:7px 10px;font-size:12px;font-family:inherit;box-sizing:border-box">
+                <input type="text" id="negDateInp" style="display:none">
               </div>
             </div>
-
-            <!-- NEGATIVE / IMPROVEMENT -->
-            <div class="notes-col" style="border-top:3px solid var(--rose)">
-              <div class="notes-col-head">
-                <span style="font-size:16px">⚠️</span>
-                <span class="notes-col-title" style="color:var(--rose)" id="negTitleEl">Points to Improve</span>
-                <span class="notes-col-badge" style="background:rgba(255,77,109,0.12);color:var(--rose)" id="negCnt">0</span>
-              </div>
-              <div class="notes-list" id="negNotesList"></div>
-              <div class="notes-add-box admin-only">
-                <div class="notes-add-row">
-                  <select id="negColSel"><option value="">All Team</option></select>
-                  <input type="text" id="negDateInp" placeholder="Date (optional)" style="max-width:130px">
-                </div>
-                <textarea class="notes-textarea" id="negTextInp" placeholder="Enter an area for improvement…" rows="2"></textarea>
-                <button class="notes-submit-btn neg-submit" onclick="addNote('negative')" id="negSubmitBtn">+ Add Improvement Note</button>
-              </div>
+            <textarea id="posTextInp" placeholder="Write your note here…" rows="2"
+              style="width:100%;background:var(--ink3);color:var(--text);border:1px solid var(--line2);border-radius:8px;padding:10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;margin-bottom:10px"></textarea>
+            <textarea id="negTextInp" style="display:none"></textarea>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <select id="posPriority" style="background:var(--ink3);color:var(--text);border:1px solid var(--line2);border-radius:8px;padding:6px 10px;font-size:12px;font-family:inherit">
+                <option value="normal">○ Normal</option>
+                <option value="high">⭐ High</option>
+                <option value="critical">🔥 Critical</option>
+              </select>
+              <select id="negPriority" style="display:none"><option value="normal">Normal</option><option value="high">High</option><option value="critical">Critical</option></select>
+              <button id="posSubmitBtn" onclick="addUnifiedNote()"
+                style="padding:8px 20px;background:linear-gradient(135deg,var(--cyan2),var(--cyan));color:var(--ink);border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+                + Add Note
+              </button>
+              <!-- keep legacy ids for AR translation -->
+              <span id="posTitleEl" style="display:none">Positive Points</span>
+              <span id="negTitleEl" style="display:none">Points to Improve</span>
+              <span id="posCnt" style="display:none">0</span>
+              <span id="negCnt" style="display:none">0</span>
+              <span id="negSubmitBtn" style="display:none"></span>
             </div>
-
           </div>
         </div>
 
@@ -4596,8 +4607,7 @@ function applyLang() {
 
   // ── Re-render notes lists ──
   populateNoteSelects();
-  renderNotesList('positive');
-  renderNotesList('negative');
+  renderUnifiedNotes();
 
 
   // ── Translate static UI elements ──
@@ -4652,8 +4662,157 @@ function renderNotesView() {
     sel.innerHTML = '<option value="">All periods</option>'
       + months.map(m=>`<option value="${m}"${m===cur?' selected':''}>${periodLabel(m)}</option>`).join('');
   }
-  renderNotesList('positive');
-  renderNotesList('negative');
+  renderUnifiedNotes();
+}
+
+function addUnifiedNote() {
+  if(role !== 'admin') return;
+  const type = document.getElementById('noteTypeSelect').value;
+  // sync hidden selects
+  const colSel = document.getElementById('posColSel');
+  document.getElementById('negColSel').value = colSel.value;
+  const dateInp = document.getElementById('posDateInp');
+  document.getElementById('negDateInp').value = dateInp.value;
+  const textInp = document.getElementById('posTextInp');
+  document.getElementById('negTextInp').value = textInp.value;
+  const priSel = document.getElementById('posPriority');
+  document.getElementById('negPriority').value = priSel.value;
+  addNote(type);
+  // clear
+  textInp.value = '';
+  dateInp.value = '';
+  priSel.value = 'normal';
+}
+
+function renderUnifiedNotes() {
+  const listEl = document.getElementById('unifiedNotesList');
+  if(!listEl) return;
+
+  const allPos = (db.notes&&db.notes.positive)||[];
+  const allNeg = (db.notes&&db.notes.negative)||[];
+  const filterMonth    = document.getElementById('notesMonthFilter')?.value || '';
+  const searchQ        = (document.getElementById('notesSearch')?.value || '').toLowerCase().trim();
+  const filterPriority = document.getElementById('notesPriorityFilter')?.value || '';
+
+  const filter = n => {
+    if(filterMonth    && (n.month||'') !== filterMonth) return false;
+    if(filterPriority && (n.priority||'normal') !== filterPriority) return false;
+    if(searchQ) {
+      const col = n.colId ? (db.colleagues.find(c=>c.id===n.colId)?.name||'').toLowerCase() : '';
+      if(!(n.text||'').toLowerCase().includes(searchQ) && !col.includes(searchQ)) return false;
+    }
+    return true;
+  };
+
+  const pos = allPos.filter(filter);
+  const neg = allNeg.filter(filter);
+  const t = appLang==='ar' ? AR : EN;
+  const isAdmin = role === 'admin';
+
+  // Update hidden counters for AR translation compatibility
+  const posCnt = document.getElementById('posCnt'); if(posCnt) posCnt.textContent = pos.length;
+  const negCnt = document.getElementById('negCnt'); if(negCnt) negCnt.textContent = neg.length;
+
+  if(!pos.length && !neg.length) {
+    listEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px">${t.noNotes||'No notes yet.'}</div>`;
+    updateTopBar(); return;
+  }
+
+  // Merge all notes, tag type and original index
+  const mergedPos = pos.map(n => ({...n, _type:'positive', _realIdx: allPos.indexOf(n)}));
+  const mergedNeg = neg.map(n => ({...n, _type:'negative', _realIdx: allNeg.indexOf(n)}));
+  const allMerged = [...mergedPos, ...mergedNeg];
+
+  // Group by period, then by colleague
+  const teamKey = '__team__';
+  const periodGroups = {};
+  allMerged.forEach(n => {
+    const mKey = n.month || 'unknown';
+    const cKey = n.colId || teamKey;
+    if(!periodGroups[mKey]) periodGroups[mKey] = {};
+    if(!periodGroups[mKey][cKey]) periodGroups[mKey][cKey] = [];
+    periodGroups[mKey][cKey].push(n);
+  });
+
+  const sortedPeriods = Object.keys(periodGroups).sort().reverse();
+
+  listEl.innerHTML = sortedPeriods.map(mKey => {
+    const mLabel = mKey !== 'unknown' ? periodLabel(mKey) : 'No period';
+
+    // Sort colleague keys: team-wide last
+    const cKeys = Object.keys(periodGroups[mKey]).sort((a,b) => {
+      if(a===teamKey) return 1; if(b===teamKey) return -1;
+      const ia = db.colleagues.findIndex(c=>c.id===a);
+      const ib = db.colleagues.findIndex(c=>c.id===b);
+      return ia - ib;
+    });
+
+    const colBlocks = cKeys.map(cKey => {
+      const colleague = cKey !== teamKey ? db.colleagues.find(c=>c.id===cKey) : null;
+      const colName   = colleague ? colleague.name : (t.allTeam||'All Team');
+      const colRole   = colleague ? colleague.role : '';
+      const colColor  = colleague ? colleague.color : 'var(--text3)';
+      const ini       = colleague ? colleague.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() : '✦';
+      const notes     = periodGroups[mKey][cKey];
+      const posNotes  = notes.filter(n=>n._type==='positive');
+      const negNotes  = notes.filter(n=>n._type==='negative');
+
+      const noteCards = notes.map(n => {
+        const isPos = n._type === 'positive';
+        const accent = isPos ? 'var(--emerald)' : 'var(--rose)';
+        const prio = n.priority || 'normal';
+        const prioBorder = prio==='critical'?'#ff4d6d':prio==='high'?'#ffb340':accent;
+        const prioBg     = prio==='critical'?'rgba(255,77,109,0.05)':prio==='high'?'rgba(255,179,64,0.04)':'';
+        const prioLabel  = prio==='critical'?'🔥 Critical':prio==='high'?'⭐ High':'';
+        const prioColor  = prio==='critical'?'#ff4d6d':prio==='high'?'#ffb340':'';
+        const typePill   = isPos
+          ? `<span style="font-size:9px;padding:1px 7px;border-radius:10px;background:rgba(0,200,150,0.12);color:var(--emerald);font-weight:700">✅ ${appLang==='ar'?'إيجابي':'Positive'}</span>`
+          : `<span style="font-size:9px;padding:1px 7px;border-radius:10px;background:rgba(255,77,109,0.10);color:var(--rose);font-weight:700">⚠ ${appLang==='ar'?'تحسين':'Improve'}</span>`;
+        const safeText = n.text.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        return `<div style="padding:9px 11px;border-radius:9px;border:1px solid var(--line2);border-left:3px solid ${prioBorder};background:${prioBg||'var(--ink3)'};position:relative;margin-bottom:6px">
+          ${isAdmin ? `<button onclick="deleteNote('${n._type}',${n._realIdx})" title="Delete"
+            style="position:absolute;top:6px;right:6px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 5px;border-radius:4px;line-height:1" onmouseover="this.style.color='var(--rose)'" onmouseout="this.style.color='var(--text3)'">✕</button>` : ''}
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap">
+            ${typePill}
+            ${prioLabel ? `<span style="font-size:9px;padding:1px 7px;border-radius:10px;background:${prioBorder}18;color:${prioColor};font-weight:700">${prioLabel}</span>` : ''}
+            ${n.date ? `<span style="font-size:10px;color:var(--text3)">${n.date}</span>` : ''}
+            ${isAdmin ? `<button onclick="toggleNotePriority('${n._type}',${n._realIdx})"
+              style="font-size:9px;padding:1px 7px;border-radius:10px;border:1px solid var(--line2);background:var(--ink4);color:var(--text3);cursor:pointer;font-family:inherit;margin-left:auto">⚑ priority</button>` : ''}
+          </div>
+          <div style="font-size:12px;color:var(--text);line-height:1.5">${safeText}</div>
+        </div>`;
+      }).join('');
+
+      return `<div style="background:var(--ink2);border:1px solid var(--line2);border-radius:12px;overflow:hidden;margin-bottom:10px">
+        <!-- Colleague header -->
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--ink1);border-bottom:1px solid var(--line2)">
+          <div style="width:34px;height:34px;border-radius:9px;background:${colColor}22;color:${colColor};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;border:1.5px solid ${colColor}44">${ini}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:var(--white)">${colName}</div>
+            ${colRole ? `<div style="font-size:10px;color:var(--text3)">${colRole}</div>` : ''}
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(0,200,150,0.12);color:var(--emerald);font-weight:700">✅ ${posNotes.length}</span>
+            <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(255,77,109,0.10);color:var(--rose);font-weight:700">⚠ ${negNotes.length}</span>
+          </div>
+        </div>
+        <!-- Notes -->
+        <div style="padding:10px 14px">
+          ${noteCards}
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div style="margin-bottom:18px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--cyan);padding:4px 0 6px;margin-bottom:8px;border-bottom:1px solid var(--line2);display:flex;align-items:center;gap:6px">
+        <span>📅</span> ${mLabel}
+        <span style="font-size:9px;color:var(--text3);font-weight:400;letter-spacing:0">(${Object.keys(periodGroups[mKey]).length} ${appLang==='ar'?'زملاء':'colleagues'})</span>
+      </div>
+      ${colBlocks}
+    </div>`;
+  }).join('');
+
+  updateTopBar();
 }
 
 function renderNotesList(type) {
@@ -4762,7 +4921,7 @@ function toggleNotePriority(type, idx) {
   notes[idx].priority = cycle[notes[idx].priority||'normal'] || 'normal';
   SFX.tap();
   save();
-  renderNotesList(type);
+  renderUnifiedNotes();
 }
 
 function updateCharCount(prefix, val) {
@@ -4790,7 +4949,7 @@ function addNote(type) {
   document.getElementById(isPos ? 'posTextInp' : 'negTextInp').value = '';
   document.getElementById(isPos ? 'posDateInp' : 'negDateInp').value = '';
   SFX.note();
-  renderNotesList(type);
+  renderUnifiedNotes();
   toast(isPos ? 'Positive note added' : 'Improvement note added');
 }
 
@@ -4801,7 +4960,7 @@ function deleteNote(type, idx) {
   db.notes[type].splice(idx, 1);
   snapshotForUndo();
   save();
-  renderNotesList(type);
+  renderUnifiedNotes();
 }
 
 function exportNotesExcel() {
@@ -4926,32 +5085,30 @@ document.addEventListener('visibilitychange', () => {
 (function registerSW() {
   if(!('serviceWorker' in navigator)) return;
   const swCode = `
-const CACHE = 'rxperform-v1';
-const ASSETS = []; // app is single-file, nothing extra to cache
+const CACHE = 'rxperform-v9';
+const ASSETS = [];
 
 self.addEventListener('install', e => {
   self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
-  clients.claim();
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
+      Promise.all(keys.map(k => caches.delete(k)))
+    ).then(() => clients.claim())
   );
 });
 
-// Network first, cache fallback — keeps data fresh from Supabase
 self.addEventListener('fetch', e => {
   if(e.request.method !== 'GET') return;
-  // Never cache Supabase API calls — always fetch fresh
   if(e.request.url.includes('supabase.co')) {
     e.respondWith(fetch(e.request));
     return;
   }
+  // Network first — always try fresh, fallback to cache
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, {cache: 'no-store'})
       .then(res => {
         const clone = res.clone();
         caches.open(CACHE).then(c => c.put(e.request, clone));
