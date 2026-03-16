@@ -1100,6 +1100,28 @@ body.lang-ar .note-del { right:auto; left:8px; }
 </style>
 </head>
 <body>
+<script>
+// ── CACHE BUSTER v9 ── runs before anything else
+(function() {
+  if(sessionStorage.getItem('rxp_fresh') === 'v9') return; // already fresh this session
+  sessionStorage.setItem('rxp_fresh','v9');
+  var did = false;
+  if('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(regs) {
+      regs.forEach(function(r){ r.unregister(); });
+    });
+  }
+  if('caches' in window) {
+    caches.keys().then(function(keys){
+      return Promise.all(keys.map(function(k){ return caches.delete(k); }));
+    }).then(function(){
+      if(!did){ did=true; location.reload(true); }
+    });
+  } else {
+    location.reload(true);
+  }
+})();
+</script>
 
 <!-- ═══════ LOGIN SCREEN ═══════ -->
 <div id="loginScreen">
